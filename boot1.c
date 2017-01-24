@@ -1,3 +1,4 @@
+#include "elf.h"
 
 typedef unsigned short int uint16_t;
 typedef unsigned char uint8_t;
@@ -9,34 +10,6 @@ extern void outb(uint16_t port, uint8_t value);
 extern void insl(uint16_t port, void *dst, int count);
 
 #define SECTOR_SIZE 512
-#define BUFSIZE 8
-
-/*
-void reverse(char *s)
-{
-  char c, *end = s;
-  while (*++end != '\0')
-    ;
-  end--;
-  while (s < end) {
-    c = *s;
-    *s++ = *end;
-    *end-- = c;
-  }
-}
-
-void PrintNumber(int n)
-{
-  int i = 0;
-  char buffer[BUFSIZE];
-  while (n) {
-    buffer[i++] = (n % 10) + '0';
-    n /= 10;
-  }
-  buffer[i] = '\0';
-  reverse(buffer);
-  PrintString32(buffer);
-}*/
 
 void waitdisk()
 {
@@ -57,14 +30,33 @@ void ReadSector(void *dst, uint32_t offset)
   insl(0x1F0, dst, SECTOR_SIZE/4);
 }
 
+inline int streq(char *s1, char *s2, int size)
+{
+  while (--size)
+    if (*s1++ != *s2++)
+      return 0;
+    return 1;
+}
+
 // Load the second stage of the bootloader
 void LoadStage2()
-{ 
-  // unsigned char c = 0, b = 0;
-  // unsigned char *dst = (unsigned char *)0x10000; // scratch space
-  // ReadSector(dst, SECTOR_SIZE-1);
-  // c = dst[SECTOR_SIZE-1];
-  // b = dst[SECTOR_SIZE-2];
-  PrintString("Yes");
-  // PrintString(b == 0x55 ? "Yes" : "No");
+{
+  struct ElfHeader *hdr;
+  void (*start)(void);
+  unsigned char *dst = (unsigned char *)0x10000; // scratch space
+  ReadSector(dst, 1);
+  int size = *(int *)dst;
+  hdr = (struct ElfHeader *)(dst + sizeof(size));
+  if (!streq((char *)hdr->e_ident, ELF_MAG, 4))
+    return;  // Bad executable
+  size -= SECTOR_SIZE-4;
+  int i = 2;
+  while (size > 0) {
+    dst += SECTOR_SIZE;
+    ReadSector(dst, i++);
+    size -= SECTOR_SIZE;
+  }
+  start = (void(*)(void))hdr->e_entry;
+  // PrintString((int)start == 0x10000 ? "Yes" : "No");
+  start(); // Never to return
 }
