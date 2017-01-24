@@ -1,5 +1,5 @@
 
-#define EI_NIDENT 14
+#define EI_NIDENT 16
 
 #define ELF_MAG "\x7F""ELF"
 

@@ -42,8 +42,8 @@ inline int streq(char *s1, char *s2, int size)
 void LoadStage2()
 {
   struct ElfHeader *hdr;
-  void (*start)(void);
-  unsigned char *dst = (unsigned char *)0x10000; // scratch space
+  void (*start)(int);
+  unsigned char *dst = (unsigned char *)0x10000 - 0x84; // 0x84 is the offset of .text section in bootloader
   ReadSector(dst, 1);
   int size = *(int *)dst;
   hdr = (struct ElfHeader *)(dst + sizeof(size));
@@ -56,7 +56,7 @@ void LoadStage2()
     ReadSector(dst, i++);
     size -= SECTOR_SIZE;
   }
-  start = (void(*)(void))hdr->e_entry;
+  start = (void(*)(int))hdr->e_entry;
   // PrintString((int)start == 0x10000 ? "Yes" : "No");
-  start(); // Never to return
+  start(0); // Never to return
 }

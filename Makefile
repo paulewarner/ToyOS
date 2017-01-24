@@ -14,7 +14,7 @@ boot1.o: boot1.c elf.h
 	$(CC) $(CFLAGS) -m32 -c boot1.c
 
 io.o: io.S
-	$(AS)  -f elf -o io.o io.S
+	$(AS) -f elf -o io.o io.S
 
 boot.o: boot.S
 	$(AS) -f elf -o boot.o boot.S
@@ -22,6 +22,6 @@ boot.o: boot.S
 qemu: drive
 	qemu-system-x86_64 -drive file=bootblock,index=0,media=disk,format=raw,index=0
 
-boot.elf: io.o
-	$(CC) $(CLFAGS) -m32 -nostdlib -c boot2.c -o boot2.o
+boot.elf: io.o boot2.c
+	$(CC) $(CFLAGS) -m32 -c boot2.c -o boot2.o
 	$(LD) -melf_i386 -N -e LoadKernel -Ttext 0x10000 -o boot.elf boot2.o io.o
