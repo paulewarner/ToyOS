@@ -39,23 +39,23 @@ FUNC insl
 	pop edi
 	pop ebp
 	ret
-FUNC PrintString			; Low level print debugging, for before a tty is set up
-	push ebp
-	mov ebp, esp
-	mov ecx, [ebp+0x8]
-	mov edx, vmem
-PrintChar:
-	mov  al, [ecx]
-	test al, al
-	jz PrintCharExit
-	mov  ah, whiteonblack
-	mov  [edx], ax
-	add edx, 0x2
-	inc ecx
-	jmp PrintChar
-PrintCharExit:
-	pop ebp
-	ret
+;FUNC PrintString			; Low level print debugging, for before a tty is set up
+;	push ebp
+;	mov ebp, esp
+;	mov ecx, [ebp+0x8]
+;	mov edx, vmem
+;PrintChar:
+;	mov  al, [ecx]
+;	test al, al
+;	jz PrintCharExit
+;	mov  ah, whiteonblack
+;	mov  [edx], ax
+;	add edx, 0x2
+;	inc ecx
+;	jmp PrintChar
+;PrintCharExit:
+;	pop ebp
+;	ret
 	;; Data
-vmem	 equ 0xb8000
-whiteonblack equ 0x0f
+;vmem	 equ 0xb8000
+;whiteonblack equ 0x0f
