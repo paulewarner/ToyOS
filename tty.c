@@ -22,34 +22,29 @@ void PrintString(char *s);
 
 int cursor = 0;
 
-void reverse(char *s)
-{
-  char c, *end = s;
-  while (*++end != '\0')
-    ;
-  end--;
-  while (s < end) {
-    c = *s;
-    *s++ = *end;
-    *end-- = c;
-  }
-}
-
-void PrintNumber(int n, int radix)
+void PrintNumber(unsigned int n, int radix, int issigned)
 {
     char buf[BUFSIZE];
-    int i = 0, sign, mod;
-    if ((sign = n) < 0)
+    int i = 0, sign = 0, mod;
+    if (issigned && (sign = n) < 0) {
         n = -n;
-    do {
-        mod = n % radix;
-        buf[i++] = mod < 10 ? mod + '0' : mod + 'A';
-    } while (n /= radix);
-    if (sign < 0)
         buf[i++] = '-';
-    buf[i] = '\0';
-    reverse(buf);
-    PrintString(buf);
+    }
+    do {
+        mod = (issigned ? -n : n) % radix;
+        buf[i++] = mod < 10 ? mod + '0' : mod - 10 + 'a';
+    } while (n /= radix);
+    // if (sign < 0)
+    //     buf[i++] = '-';
+    if (issigned) {
+        int x = 0;
+        while (x < i)
+            PutChar(buf[x++]);
+    } else {
+        while (i) {
+            PutChar(buf[--i]);
+        }
+    }
     return;
 }
 
@@ -74,6 +69,11 @@ void PutChar(char c)
 {
     char *vmem;
     switch(c) {
+        case '\b':
+            MoveCursor(cursor-1);
+            PutChar(' ');
+            MoveCursor(cursor-1);
+            break;
         case '\t': // I wouldn't call this particularly elegant...
             PutChar(' ');
             PutChar(' ');
@@ -98,24 +98,32 @@ void PrintString(char *s)
         PutChar(c);
 }
 
-void Printf(char *fmt, ...)
+void Printk(char *fmt, ...)
 {
     if (!fmt)
         return;
     int *p = ((int *)&fmt) + 1;
-    char c = 0;
+    char c = 0, type;
     while ((c = *fmt++) != '\0') {
         if (c == '%') {
-            char type = *fmt++;
+operand:
+            type = *fmt++;
             switch (type) {
+                case 'u':
+                PrintNumber(*p++, 10, 0);
                 case 'x':
-                PrintNumber(*p++, 16);
+                PrintNumber(*p++, 16, 0);
                 break;
                 case 'd':
-                PrintNumber(*p++, 10);
+                PrintNumber(*p++, 10, 1);
                 break;
+                case 'o':
+                PrintNumber(*p++, 8, 0);
                 case 's':
                 PrintString((char *)*p++);
+                case '#':
+                PrintString(*fmt == 'x' ? "0x" : "0");
+                goto operand;
                 break;
                 default:
                 return; // error
@@ -133,5 +141,5 @@ void ClearScreen()
     for (i = 0; i < COLS*ROWS; i += 2) {
         vmem[i] = ' ';
     }
-    // PutChar(cursor + '0');
+    MoveCursor(0);
 }

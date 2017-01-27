@@ -1,4 +1,4 @@
 
 void TTYInit(void);
-void Printf(char *fmt, ...);
+void Printk(char *fmt, ...);
 void ClearScreen();
