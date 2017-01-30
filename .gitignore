@@ -4,3 +4,5 @@ bootblock
 #*#
 a.out
 *.elf
+deps
+kernel
