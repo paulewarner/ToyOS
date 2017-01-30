@@ -1,5 +1,6 @@
 #include "types.h"
 #include "tty.h"
+#include "io.h"
 
 #define VMEM 0xB8000
 #define COLOR 0x07 // grey on black
@@ -13,9 +14,6 @@
 #define ROWS 25
 
 #define BUFSIZE 16
-
-extern uint8_t inb(uint16_t);
-extern void outb(uint16_t, uint16_t);
 
 void PutChar(char c);
 void PrintString(char *s);

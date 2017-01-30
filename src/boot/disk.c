@@ -1,8 +1,5 @@
 #include "disk.h"
-
-extern char inb(uint16_t port);
-extern void outb(uint16_t port, uint8_t value);
-extern void insl(uint16_t port, void *dst, int count);
+#include "io.h"
 
 void waitdisk()
 {

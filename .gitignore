@@ -6,3 +6,4 @@ a.out
 *.elf
 deps
 kernel
+os.iso
