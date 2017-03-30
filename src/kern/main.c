@@ -1,7 +1,8 @@
 #include "tty.h"
 
 
-int Main()
+int main()
 {
+    TTYInit();
     Printk("Hello, Kernel!\n");
 }

@@ -115,7 +115,7 @@ EnterC:	 					; Procedure to begin running C code
 gdt:
 	SEG_NULLASM
 .code: equ $ - gdt
-	SEG_ASM (STA_X|STA_R), 0x0, 0xFFFFFFFF, 0
+	ASM (STA_X|STA_R), 0x0, 0xFFFFFFFF
 .pointer:
 	dw ($ - gdt - 1)
 	dd gdt

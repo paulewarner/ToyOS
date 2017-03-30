@@ -1,28 +1,40 @@
-AS = nasm
-CC = gcc
-LD = ld
-CFLAGS += -fno-stack-protector -static -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer -O -fno-pic -nostdinc -I$(INC)
-ASFLAGS += -i $(INC)/
+CFLAGS += -fno-stack-protector -static -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer -O -fno-pic -nostdinc $(INC)
+ASFLAGS += $(INC)/ -f elf64
 
-kernel: main.o tty.o io.o header.o entry.o kernel.ld
-	$(LD) -e start -n -T kernel.ld -o kernel main.o tty.o io.o header.o entry.o
+DEPDIR = .d
+$(shell mkdir -p $(DEPDIR) >/dev/null)
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
-header.o: header.S
-	$(AS) -f elf64 header.S -o header.o
+COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+COMPILE.S = $(AS) $(ASFLAGS) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Td
+POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
-main.o: main.c
-	$(CC) $(CFLAGS) -c main.c
+KERNSRCS = main.o \
+		   io.o \
+		   tty.o \
+		   header.o \
+		   entry.o \
 
-tty.o: tty.c
-	$(CC) $(CFLAGS) -c tty.c
+kernel: $(KERNSRCS) kernel.ld
+	$(LD) -e start -n -T kernel.ld -o kernel $(KERNSRCS)
 
-io.o: io.S
-	$(AS) $(ASFLAGS) -f elf64 io.S
+%.o : %.S
+%.o : %.S $(DEPDIR)/%.d
+		$(COMPILE.S)  $(OUTPUT_OPTION) $<
+		$(POSTCOMPILE)
 
-entry.o: entry.S
-	$(AS) $(ASFLAGS) -f elf64 entry.S
+%.o : %.c
+%.o : %.c $(DEPDIR)/%.d
+		$(COMPILE.c) $(OUTPUT_OPTION) $<
+		$(POSTCOMPILE)
+
+$(DEPDIR)/%.d: ;
+.PRECIOUS: $(DEPDIR)/%.d
+
+-include $(patsubst %,$(DEPDIR)/%.d,$(basename $(SRCS)))
 
 clean:
 	rm -rf *.o
 	rm -rf kernel
+	rm -rf $(DEPDIR)
 

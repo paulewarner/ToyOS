@@ -1,18 +1,22 @@
+AS = nasm
+CC = gcc
+LD = ld
 
 SRC = $(CURDIR)/src
 BUILD = $(CURDIR)/build
-INC = $(CURDIR)/include
+INC = -I$(CURDIR)/include
 
 export
 
 SRCFILES := $(shell find $(1) -type f -name '*.c' -or -name "*.py" -or -name "*.ld" -or -name "*.S" -or -name "*.h")
 
-drive: writedisk.py
-	$(MAKE) -C $(SRC)
+drive: writedisk.py $(call SRCFILES src/boot) $(call SRCFILES include)
+	$(MAKE) -C $(SRC)/boot
+	$(MAKE) -C $(SRC)/kern
 	cd $(BUILD)
 	$(TOP)/writedisk.py bootblock bootblock.o boot.elf
 
-os.iso: $(call SRCFILES, src/kern)
+os.iso: $(call SRCFILES, src/kern) $(call SRCFILES include)
 	$(MAKE) -C src/kern kernel
 	rm -rf isofiles
 	mkdir isofiles
