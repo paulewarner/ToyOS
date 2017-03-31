@@ -12,5 +12,5 @@ extern void PrintString(char *s);
 void LoadKernel(int sector)
 {
     TTYInit();
-    Printk("%x", -15);
+    Printk("Hello!");
 }

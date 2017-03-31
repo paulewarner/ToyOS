@@ -5,10 +5,10 @@ extern LoadStage2
 start:
 	cli 					; disable interrupt flag
 	mov sp, 0x7BFF 			; Set a temporary stack we can use, 30 KiB
-;	xor ax, ax 				; Zero out data segment registers
-;	mov ds, ax
-;	mov es, ax
-;	mov ss, ax
+	;xor ax, ax 				; Zero out data segment registers
+	;mov ds, ax
+	;mov es, ax
+	;mov ss, ax
 	lgdt [gdt.pointer]		; load GDT
 	mov eax, cr0			; Set the Protection Enable bit
 	or eax, 0x1
@@ -99,23 +99,38 @@ a20bios_exit:
 ;	ret
 bits 32
 EnterC:	 					; Procedure to begin running C code
-	;; We need to load all code segments that might need to be used
-	;; with the same data segment selector we used to the code segment
-	;mov ax, gdt.code
-	;mov ds, ax
-	;mov es, ax
-	;mov ss, ax
-	;; Now zero the rest of them
-	;xor ax, ax
-	;mov fs, ax
-	;mov gs, ax
 	call LoadStage2
 	hlt 					; unreachable, but hang anyway
+global PrintString
+PrintString:			; Low level print debugging, for before a tty is set up
+	push ebp
+	mov ebp, esp
+	mov ecx, [ebp+0x8]
+	mov edx, vmem
+PrintChar:
+	mov  al, [ecx]
+	test al, al
+	jz PrintCharExit
+	mov  ah, whiteonblack
+	mov  [edx], ax
+	add edx, 0x2
+	inc ecx
+	jmp PrintChar
+PrintCharExit:
+	pop ebp
+	ret
+	;; Data
+vmem	 equ 0xb8000
+whiteonblack equ 0x0f
+
 	;; Data
 gdt:
 	SEG_NULLASM
 .code: equ $ - gdt
-	ASM (STA_X|STA_R), 0x0, 0xFFFFFFFF
+	SEG (STA_X|STA_R), 0x0, 0xFFFFFFFF, 0
 .pointer:
 	dw ($ - gdt - 1)
 	dd gdt
+
+;Data
+HelloString db 'Hello World', 0	;HelloWorld string ending with 0

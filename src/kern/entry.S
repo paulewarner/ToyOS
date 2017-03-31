@@ -79,7 +79,6 @@ vmem	 equ 0xb8000
 whiteonblack equ 0x0f
 bits 64
 start64:
-    ; print `OKAY` to screen
     call main
     hlt
 section .bss

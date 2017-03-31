@@ -8,3 +8,5 @@ deps
 kernel
 os.iso
 .d
+tags
+bootloader

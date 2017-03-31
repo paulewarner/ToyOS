@@ -9,6 +9,8 @@ inline int streq(char *s1, char *s2, int size)
     return 1;
 }
 
+extern void PrintString(char *s);
+
 // Load the second stage of the bootloader
 void LoadStage2()
 {

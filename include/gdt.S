@@ -6,13 +6,17 @@
 ; The 0xC0 means the limit is in 4096-byte units
 ; and (for executable segments) 32-bit mode.
 
-; SEG(type, base, limit): macro to make my own x86 segment descriptors 
+; SEG(type, base, limit, is64): macro to make my own x86 segment descriptors 
 %macro SEG 4
 	dw (((%3) >> 12) & 0xFFFF) 		; first part of segment limit
 	dw ((%2) & 0xFFFF)				; first part of base address
 	db (((%2) >> 16) & 0xFF) 		; next 8 bytes of base address
 	db (0x90 | (%1)) 				; Access control byte
-	db ((%4 << 5) | (((%3) >> 28) & 0xF)); Flags and limit register
+	%if %4
+	db ((%4 << 5) | ((%3 >> 28) & 0xF)) ; Flags and limit register
+	%else
+	db (0xC0 | (((%3) >> 28) & 0xF))
+	%endif
 	db (((%2) >> 24) & 0xFF)		; Last segment of the base address
 %endmacro
 

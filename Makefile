@@ -11,13 +11,13 @@ export
 SRCFILES := $(shell find $(1) -type f -name '*.c' -or -name "*.py" -or -name "*.ld" -or -name "*.S" -or -name "*.h")
 
 drive: writedisk.py $(call SRCFILES src/boot) $(call SRCFILES include)
-	$(MAKE) -C $(SRC)/boot
-	$(MAKE) -C $(SRC)/kern
-	cd $(BUILD)
-	$(TOP)/writedisk.py bootblock bootblock.o boot.elf
+	$(MAKE) -C src/boot $(INC)
+	# $(MAKE) -C src/kern kernel $(INC)
+	# cd $(BUILD)
+	# $(CURDIR)/writedisk.py $(CURDIR)/bootblock $(SRC)/boot/bootblock.o $(SRC)/boot/boot.elf
 
 os.iso: $(call SRCFILES, src/kern) $(call SRCFILES include)
-	$(MAKE) -C src/kern kernel
+	$(MAKE) -C src/kern kernel $(INC)
 	rm -rf isofiles
 	mkdir isofiles
 	mkdir isofiles/boot
@@ -28,7 +28,7 @@ os.iso: $(call SRCFILES, src/kern) $(call SRCFILES include)
 	rm -rf isofiles
 
 qemu: drive
-	qemu-system-x86_64 -drive file=bootblock,index=0,media=disk,format=raw,index=0
+	qemu-system-x86_64 -drive file=$(SRC)/boot/bootloader,index=0,media=disk,format=raw,index=0
 
 qemu-grub: os.iso
 	qemu-system-x86_64 -cdrom os.iso
