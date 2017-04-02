@@ -31,5 +31,5 @@ void LoadStage2()
   }
   start = (void(*)(int))hdr->e_entry;
   // PrintString((int)start == 0x10000 ? "Yes" : "No");
-  start(0); // Never to return
+  start(i); // Never to return
 }

@@ -101,28 +101,6 @@ bits 32
 EnterC:	 					; Procedure to begin running C code
 	call LoadStage2
 	hlt 					; unreachable, but hang anyway
-global PrintString
-PrintString:			; Low level print debugging, for before a tty is set up
-	push ebp
-	mov ebp, esp
-	mov ecx, [ebp+0x8]
-	mov edx, vmem
-PrintChar:
-	mov  al, [ecx]
-	test al, al
-	jz PrintCharExit
-	mov  ah, whiteonblack
-	mov  [edx], ax
-	add edx, 0x2
-	inc ecx
-	jmp PrintChar
-PrintCharExit:
-	pop ebp
-	ret
-	;; Data
-vmem	 equ 0xb8000
-whiteonblack equ 0x0f
-
 	;; Data
 gdt:
 	SEG_NULLASM
@@ -131,6 +109,3 @@ gdt:
 .pointer:
 	dw ($ - gdt - 1)
 	dd gdt
-
-;Data
-HelloString db 'Hello World', 0	;HelloWorld string ending with 0

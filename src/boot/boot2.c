@@ -7,10 +7,8 @@
 
 #define SECTOR_SIZE 512
 
-extern void PrintString(char *s);
-
 void LoadKernel(int sector)
 {
     TTYInit();
-    Printk("Hello!");
+    Printk("%d", sector);
 }

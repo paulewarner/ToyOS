@@ -48,10 +48,10 @@ void PrintNumber(unsigned int n, int radix, int issigned)
 
 void TTYInit()
 {
-    outb(0x3d4, 14);
-    cursor = ((unsigned char)inb(0x3d4+1)) << 8;
-    outb(0x3d4, 15);
-    cursor |= (unsigned char)inb(0x3d4+1);
+    outb(CRTOUT, 14);
+    cursor = ((unsigned char)inb(CRTIN)) << 8;
+    outb(CRTOUT, 15);
+    cursor |= (unsigned char)inb(CRTIN);
 }
 
 void MoveCursor(int pos)

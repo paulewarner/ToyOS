@@ -1,4 +1,4 @@
-CFLAGS += -fno-stack-protector -static -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer -O -fno-pic -nostdinc $(INC)
+CFLAGS += -g -fno-stack-protector -static -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer -fno-pic -nostdinc $(INC)
 ASFLAGS += $(INC)/ -f elf64
 
 DEPDIR = .d
