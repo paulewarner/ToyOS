@@ -33,6 +33,12 @@ qemu: drive
 qemu-grub: os.iso
 	qemu-system-x86_64 -cdrom os.iso
 
+qemu-grub-lldb: os.iso
+	lldb -s $(CURDIR)/scripts/lldb-debug.py
+
+qemu-grub-gdb: os.iso
+	gdb -x $(CURDIR)/scripts/gdb-debug.py
+
 clean:
 	$(MAKE) -C src/kern clean
 	$(MAKE) -C src/boot clean
