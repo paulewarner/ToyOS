@@ -1,6 +1,7 @@
 #include "types.h"
 #include "tty.h"
 #include "io.h"
+#include "stdarg.h"
 
 #define VMEM 0xB8000
 #define COLOR 0x07 // grey on black
@@ -22,6 +23,17 @@ int cursor = 0;
 
 void PrintNumber(unsigned int n, int radix, int issigned)
 {
+    // char buf[BUFSIZE];
+    // int i = 0, sign, mod;
+    // if (issigned && (sign = (int)n) < 0) {
+    //     n = -n;
+    //     buf[i++] = '-';
+    // }
+    // do {
+    //     mod = (issigned ? -n : n) % radix;
+    //     buf[i++] = mod < 10 ? mod + '0' : mod - 10 + 'a';
+    // } while (n /= radix);
+
     char buf[BUFSIZE];
     int i = 0, sign = 0, mod;
     if (issigned && (sign = n) < 0) {
@@ -100,7 +112,8 @@ void Printk(char *fmt, ...)
 {
     if (!fmt)
         return;
-    int *p = ((int *)&fmt) + 1;
+    va_list ap;
+    va_start(ap, fmt);
     char c = 0, type;
     while ((c = *fmt++) != '\0') {
         if (c == '%') {
@@ -108,17 +121,17 @@ operand:
             type = *fmt++;
             switch (type) {
                 case 'u':
-                PrintNumber(*p++, 10, 0);
+                PrintNumber(va_arg(ap, unsigned int), 10, 0);
                 case 'x':
-                PrintNumber(*p++, 16, 0);
+                PrintNumber(va_arg(ap, unsigned int), 16, 0);
                 break;
                 case 'd':
-                PrintNumber(*p++, 10, 1);
+                PrintNumber(va_arg(ap, unsigned int), 10, 1);
                 break;
                 case 'o':
-                PrintNumber(*p++, 8, 0);
+                PrintNumber(va_arg(ap, unsigned int), 8, 0);
                 case 's':
-                PrintString((char *)*p++);
+                PrintString(va_arg(ap, char *));
                 case '#':
                 PrintString(*fmt == 'x' ? "0x" : "0");
                 goto operand;

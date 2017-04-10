@@ -1,5 +1,5 @@
 AS = nasm
-CC = gcc
+CC = clang
 LD = ld
 
 SRC = $(CURDIR)/src

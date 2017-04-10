@@ -1,13 +1,9 @@
 #include "tty.h"
-
-void MemInit()
-{
-
-}
+#include "vm.h"
 
 int main()
 {
     TTYInit();
-    MemInit();
+    KAllocInit();
     Printk("Hello, Kernel!\n");
 }

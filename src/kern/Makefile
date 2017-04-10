@@ -14,6 +14,7 @@ KERNSRCS = main.o \
 		   tty.o \
 		   header.o \
 		   entry.o \
+		   vm.o \
 
 kernel: $(KERNSRCS) kernel.ld
 	$(LD) -e start -n -T kernel.ld -o kernel $(KERNSRCS)
