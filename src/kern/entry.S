@@ -10,7 +10,7 @@ start:
     call EnableFPU
     call EnableSSE
 	lgdt [gdt.pointer]
-	jmp gdt.code:start64
+	jmp gdt.code:Start64
 	hlt
 
 SetUpPageTables:
@@ -113,9 +113,9 @@ PrintCharExit:
 vmem	 equ 0xb8000
 whiteonblack equ 0x0f
 bits 64
-start64:
+Start64:
     call main
-    hlt
+    hlt              ; not reached
 section .bss
 align 4096
 p4_table:

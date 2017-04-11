@@ -3,10 +3,11 @@
 #include "util.h"
 
 
-void panic(char *fmt, ...)
+void Panic(char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
     Printk("Kernel panic: ");
     VPrintk(fmt, ap);
+    asm("\t hlt");
 }
