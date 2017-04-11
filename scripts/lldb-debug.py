@@ -1,4 +1,4 @@
-settings set plugin.process.gdb-remote.target-definition-file /home/pwarner/.lldb/x86_64_target_definition.py
+settings set plugin.process.gdb-remote.target-definition-file ./deps/x86_64_target_definition.py
 script
 import subprocess
 
