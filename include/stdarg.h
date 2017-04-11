@@ -7,48 +7,6 @@
     all declared parameters to the function must be 8 bytes
 */
 
-static inline long int __lrsi(void)
-{
-    long int i;
-    asm("\t movq %%rsi, %0" : "=r"(i));
-    return i;
-}
-
-static inline long int __lrdi(void)
-{
-    long int i;
-    asm("\t movq %%rdi, %0" : "=r"(i));
-    return i;
-}
-
-static inline long int __lrdx(void)
-{
-    long int i;
-    asm("\t movq %%rdx, %0" : "=r"(i));
-    return i;
-}
-
-static inline long int __lrcx(void)
-{
-    long int i;
-    asm("\t movq %%rcx, %0" : "=r"(i));
-    return i;
-}
-
-static inline long int __lr8(void)
-{
-    long int i;
-    asm("\t movq %%r8, %0" : "=r"(i));
-    return i;
-}
-
-static inline long int __lr9(void)
-{
-    long int i;
-    asm("\t movq %%r9, %0" : "=r"(i));
-    return i;
-}
-
 #define NREG_ARGS 6
 
 typedef struct va_list {

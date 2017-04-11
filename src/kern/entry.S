@@ -5,13 +5,15 @@ section .text
 bits 32
 start:
     mov esp, stack_top
-    call set_up_page_tables
-    call enable_paging
+    call SetUpPageTables
+    call EnablePaging
+    call EnableFPU
+    call EnableSSE
 	lgdt [gdt.pointer]
 	jmp gdt.code:start64
 	hlt
 
-set_up_page_tables:
+SetUpPageTables:
     ; map first P4 entry to P3 table
     mov eax, p3_table
     or eax, 0b11 ; present + writable
@@ -37,7 +39,7 @@ set_up_page_tables:
 
     ret
 
-enable_paging:
+EnablePaging:
     ; load P4 to cr3 register (cpu uses this to access the P4 table)
     mov eax, p4_table
     mov cr3, eax
@@ -59,7 +61,33 @@ enable_paging:
     mov cr0, eax
 
     ret
-
+    ; enable fpu, if not possible then halt
+    cr0_em equ 0x2 ; emulate the effect of an fpu in software. needs to be turned off
+    cr0_ts equ 0x4 ; should fpu state be saved on interrupt?
+EnableFPU:
+    mov edx, cr0
+    mov ecx, edx
+    and edx, (-1) - (cr0_em + cr0_ts)
+    mov cr0, edx
+    fninit
+    fnstsw [testword]
+    cmp word [testword], 0
+    jne nofpu
+    mov cr0, ecx
+    fninit
+    ret
+nofpu:
+    hlt
+testword: dw 0x55AA
+EnableSSE:
+    mov eax, cr0
+    and ax, 0xFFFB      ; clear cr0.em bit
+    or ax, 0x2          ; set coprocessor monitoring
+    mov cr0, eax
+    mov eax, cr4
+    or ax, 3 << 9       ; enable SSE instructions and unmasked exceptions
+    mov cr4, eax
+    ret
 PrintString:			; Low level print debugging, for before a tty is set up
 	mov edx, vmem
 PrintChar:

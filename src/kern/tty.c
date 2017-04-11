@@ -23,29 +23,18 @@ int cursor = 0;
 
 void PrintNumber(unsigned int n, int radix, int issigned)
 {
-    // char buf[BUFSIZE];
-    // int i = 0, sign, mod;
-    // if (issigned && (sign = (int)n) < 0) {
-    //     n = -n;
-    //     buf[i++] = '-';
-    // }
-    // do {
-    //     mod = (issigned ? -n : n) % radix;
-    //     buf[i++] = mod < 10 ? mod + '0' : mod - 10 + 'a';
-    // } while (n /= radix);
 
     char buf[BUFSIZE];
     int i = 0, sign = 0, mod;
     if (issigned && (sign = n) < 0) {
         n = -n;
-        buf[i++] = '-';
     }
     do {
         mod = (issigned ? -n : n) % radix;
         buf[i++] = mod < 10 ? mod + '0' : mod - 10 + 'a';
     } while (n /= radix);
-    // if (sign < 0)
-    //     buf[i++] = '-';
+    if (sign < 0)
+        buf[i++] = '-';
     if (issigned) {
         int x = 0;
         while (x < i)
@@ -108,12 +97,8 @@ void PrintString(char *s)
         PutChar(c);
 }
 
-void Printk(char *fmt, ...)
+void VPrintk(char *fmt, va_list ap)
 {
-    if (!fmt)
-        return;
-    va_list ap;
-    va_start(ap, fmt);
     char c = 0, type;
     while ((c = *fmt++) != '\0') {
         if (c == '%') {
@@ -143,6 +128,13 @@ operand:
             PutChar(c);
         }
     }
+}
+
+void Printk(char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    VPrintk(fmt, ap);
 }
 
 void ClearScreen()
