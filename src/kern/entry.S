@@ -80,6 +80,11 @@ nofpu:
     hlt
 testword: dw 0x55AA
 EnableSSE:
+    ;; First we want to test if SSE is available
+    mov eax, 0x1 
+    cpuid
+    test edx, 1 << 25   ; check if SSE bit is enabled
+    jz .no_sse
     mov eax, cr0
     and ax, 0xFFFB      ; clear cr0.em bit
     or ax, 0x2          ; set coprocessor monitoring
@@ -88,6 +93,8 @@ EnableSSE:
     or ax, 3 << 9       ; enable SSE instructions and unmasked exceptions
     mov cr4, eax
     ret
+.no_sse:
+    hlt
 PrintString:			; Low level print debugging, for before a tty is set up
 	mov edx, vmem
 PrintChar:
