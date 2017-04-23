@@ -1,12 +1,10 @@
 CFLAGS += -g -fno-stack-protector -static -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer -fno-pic -nostdinc $(INC)
-ASFLAGS += $(INC)/ -f elf64
 
 DEPDIR = .d
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
-COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
-COMPILE.S = $(AS) $(ASFLAGS) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Td
+COMPILE = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
 KERNSRCS = main.o \
@@ -22,12 +20,12 @@ kernel: $(KERNSRCS) kernel.ld
 
 %.o : %.S
 %.o : %.S $(DEPDIR)/%.d
-		$(COMPILE.S)  $(OUTPUT_OPTION) $<
+		$(COMPILE)  $(OUTPUT_OPTION) $<
 		$(POSTCOMPILE)
 
 %.o : %.c
 %.o : %.c $(DEPDIR)/%.d
-		$(COMPILE.c) $(OUTPUT_OPTION) $<
+		$(COMPILE) $(OUTPUT_OPTION) $<
 		$(POSTCOMPILE)
 
 $(DEPDIR)/%.d: ;

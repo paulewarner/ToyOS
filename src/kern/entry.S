@@ -1,138 +1,120 @@
-global start
-%include "gdt.S"
-extern main
-section .text
-bits 32
+#include "gdt.h"
+.code32
+.text
+.globl start
 start:
-    mov esp, stack_top
-    call SetUpPageTables
-    call EnablePaging
-    call EnableFPU
-    call EnableSSE
-	lgdt [gdt.pointer]
-	jmp gdt.code:Start64
-	hlt
+    mov $stack_top, %esp
+    call setup_page_tables
+    call enable_paging
+    call enable_fpu
+    call enable_sse
+    lgdt gdtdesc
+    ljmp $(1<<3), $start_64
+    hlt
+setup_page_tables:
+    # map first P4 entry to P3 table
+    mov $p3_table, %eax
+    or $0b11, %eax
+    mov %eax, (p4_table)
 
-SetUpPageTables:
-    ; map first P4 entry to P3 table
-    mov eax, p3_table
-    or eax, 0b11 ; present + writable
-    mov [p4_table], eax
+    # map first P3 entry to P2 table
+    mov $p2_table, %eax
+    or $0b11, %eax
+    mov %eax, (p3_table)
 
-    ; map first P3 entry to P2 table
-    mov eax, p2_table
-    or eax, 0b11 ; present + writable
-    mov [p3_table], eax
-
-    ; map each P2 entry to a huge 2MiB page
-    mov ecx, 0 ; counter variable
-.map_p2_table:
-    ; map ecx-th P2 entry to a huge page that starts at address (2MiB * ecx)
-    mov eax, 0x200000  ; 2MiB
-    mul ecx            ; start address of ecx-th page
-    or eax, 0b10000011 ; present + writable + huge
-    mov [p2_table + ecx * 8], eax ; map ecx-th entry
-
-    inc ecx            ; increase counter
-    cmp ecx, 512       ; if counter == 512, the whole P2 table is mapped
-    jne .map_p2_table  ; else map the next entry
+    # map each P2 entry to a huge 2MiB page
+    mov $0, %ecx   # counter variable
+map_p2_table:
+    # map ecx-th P2 entry to a huge page that starts at the address (2MiB * ecx)
+    mov $0x200000, %eax             # 2MiB
+    mul %ecx                        # start adddress of ecx-th page
+    or $0b10000011, %eax            # present + writable + huge
+    mov %eax, p2_table(, %ecx, 8)  # map the entry
+    inc %ecx                        # increase counter
+    cmp $512, %ecx                  # if counter == 512, whole P2 table is mapped
+    jne map_p2_table                # else map the next entry
 
     ret
+enable_paging:
+    # load P4 to cr3 register (cpu uses this to access P4 table)
+    mov $p4_table, %eax
+    mov %eax, %cr3
 
-EnablePaging:
-    ; load P4 to cr3 register (cpu uses this to access the P4 table)
-    mov eax, p4_table
-    mov cr3, eax
+    # enable PAE flag in cr4 (Physical Address Extension)
+    mov %cr4, %eax
+    or $(1 << 5), %eax
+    mov %eax, %cr4
 
-    ; enable PAE-flag in cr4 (Physical Address Extension)
-    mov eax, cr4
-    or eax, 1 << 5
-    mov cr4, eax
-
-    ; set the long mode bit in the EFER MSR (model specific register)
-    mov ecx, 0xC0000080
+    # set the long mode bit in the EFER MSR (model specific register)
+    mov $0xC0000080, %ecx
     rdmsr
-    or eax, 1 << 8
+    or $(1 << 8), %eax
     wrmsr
 
-    ; enable paging in the cr0 register
-    mov eax, cr0
-    or eax, 1 << 31
-    mov cr0, eax
+    # enable paging in the cr0 register
+    mov %cr0, %eax
+    or $(1 << 31), %eax
+    mov %eax, %cr0
 
     ret
-    ; enable fpu, if not possible then halt
-    cr0_em equ 0x2 ; emulate the effect of an fpu in software. needs to be turned off
-    cr0_ts equ 0x4 ; should fpu state be saved on interrupt?
-EnableFPU:
-    mov edx, cr0
-    mov ecx, edx
-    and edx, (-1) - (cr0_em + cr0_ts)
-    mov cr0, edx
+enable_sse:
+    mov $1, %eax
+    cpuid
+    test $(1 << 25), %edx     # check if SSE bit is enabled
+    jz no_sse
+    mov %cr0, %eax
+    and $0xFFFB, %ax        # clear cr0.em bit
+    or $2, %ax
+    mov %eax, %cr0
+    or $2, %ax
+    mov %eax, %cr0
+    mov %cr4, %eax
+    or $(3 << 9), %ax          # enable SSE instructions and unmasked exceptions
+    mov %eax, %cr4
+    ret
+no_sse:
+    hlt
+.globl enable_fpu
+.set cr0_em, 0x2 # emulate the effect of an fpu in software. 
+.set cr0_ts,  0x4 # Should the state of the fpu be saved on interrupt?
+fpu_testword:
+    .int 0x55AA
+enable_fpu:
+    # first, we test if process has an FPU by telling the processor to emulate the effect
+    # of one in software (so that trying an operation won't cause an interrupt), then
+    # testing to see if our test word has been overwritten
+    mov %cr0, %edx
+    mov %edx, %ecx
+    and $((-1) - (cr0_em + cr0_ts)), %edx
+    mov %edx, %cr0
     fninit
-    fnstsw [testword]
-    cmp word [testword], 0
+    fnstsw (fpu_testword)
+    cmpl $0, (fpu_testword)
     jne nofpu
-    mov cr0, ecx
+    mov %ecx, %cr0
     fninit
     ret
 nofpu:
     hlt
-testword: dw 0x55AA
-EnableSSE:
-    ;; First we want to test if SSE is available
-    mov eax, 0x1 
-    cpuid
-    test edx, 1 << 25   ; check if SSE bit is enabled
-    jz .no_sse
-    mov eax, cr0
-    and ax, 0xFFFB      ; clear cr0.em bit
-    or ax, 0x2          ; set coprocessor monitoring
-    mov cr0, eax
-    mov eax, cr4
-    or ax, 3 << 9       ; enable SSE instructions and unmasked exceptions
-    mov cr4, eax
-    ret
-.no_sse:
-    hlt
-PrintString:			; Low level print debugging, for before a tty is set up
-	mov edx, vmem
-PrintChar:
-	mov  al, [ecx]
-	test al, al
-	jz PrintCharExit
-	mov  ah, whiteonblack
-	mov  [edx], ax
-	add edx, 0x2
-	inc ecx
-	jmp PrintChar
-PrintCharExit:
-	pop ebp
-	ret
-	;; Data
-vmem	 equ 0xb8000
-whiteonblack equ 0x0f
-bits 64
-Start64:
+.code64
+.globl start_64
+start_64:
     call main
-    hlt              ; not reached
-section .bss
-align 4096
-p4_table:
-    resb 4096
-p3_table:
-    resb 4096
-p2_table:
-    resb 4096
-stack_bottom:
-    resb 64
-stack_top:
-section .rodata
-msg: db    'hello', 0            ; string constant
+    hlt          # not reached
+.p2align 2
 gdt:
-	SEG_NULLASM
-.code: equ $ - gdt
-	SEG (STA_X|STA_R), 0x0, 0xFFFFFFFF, 1
-.pointer:
-	dw ($ - gdt - 1)
-	dd gdt
+    SEG_NULLASM
+gdt_seg1:
+    SEG(STA_X|STA_R, 0x0, 0xFFFFFFFF)
+gdt_seg2:
+    SEG(STA_X, 0x0, 0xFFFFFFFF)
+gdtdesc:
+    .word (gdtdesc - gdt - 1)
+    .int gdt
+.section .bss
+.balign 4096
+p4_table: .space 4096
+p3_table: .space 4096
+p2_table: .space 4096
+stack_bottom: .space 128
+stack_top:
