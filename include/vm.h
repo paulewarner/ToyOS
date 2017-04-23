@@ -5,7 +5,7 @@ struct pgtab {
 
 };
 
-void KAllocInit(void);
+void kalloc_init(void);
 
 
 

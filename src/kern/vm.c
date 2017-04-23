@@ -3,7 +3,7 @@
 
 extern char end[]; /* has to be an array (for some reason), created in linker script */
 
-void KAllocInit(void)
+void kalloc_init(void)
 {
-    Printk("%#x\n", end);
+    printk("%#x\n", end);
 }

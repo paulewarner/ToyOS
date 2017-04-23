@@ -3,9 +3,9 @@
 
 #include "stdarg.h"
 
-void TTYInit(void);
-void Printk(char *fmt, ...);
-void ClearScreen();
-void VPrintk(char *fmt, va_list ap);
+void tty_init(void);
+void printk(char *fmt, ...);
+void clear_screen();
+void vprintk(char *fmt, va_list ap);
 
 #endif /* TTY_H */

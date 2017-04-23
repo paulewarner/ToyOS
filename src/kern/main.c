@@ -4,6 +4,6 @@
 
 int main()
 {
-    TTYInit();
-    Panic("testing panic...");
+    tty_init();
+    panic("testing panic...");
 }

@@ -1,6 +1,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-void Panic(char *fmt, ...);
+void panic(char *fmt, ...);
 
 #endif /* UTIL_H */

@@ -16,12 +16,12 @@
 
 #define BUFSIZE 16
 
-void PutChar(char c);
-void PrintString(char *s);
+void putchar(char c);
+void print_string(char *s);
 
 int cursor = 0;
 
-void PrintNumber(unsigned int n, int radix, int issigned)
+void print_number(unsigned int n, int radix, int issigned)
 {
 
     char buf[BUFSIZE];
@@ -38,16 +38,16 @@ void PrintNumber(unsigned int n, int radix, int issigned)
     if (issigned) {
         int x = 0;
         while (x < i)
-            PutChar(buf[x++]);
+            putchar(buf[x++]);
     } else {
         while (i) {
-            PutChar(buf[--i]);
+            putchar(buf[--i]);
         }
     }
     return;
 }
 
-void TTYInit()
+void tty_init()
 {
     outb(0x3d4, 14);
     cursor = ((unsigned char)inb(0x3d4+1)) << 8;
@@ -55,7 +55,7 @@ void TTYInit()
     cursor |= (unsigned char)inb(0x3d4+1);
 }
 
-void MoveCursor(int pos)
+void move_cursor(int pos)
 {
     cursor = pos;
     outb(CRTOUT, CURSOR_POS_LOWER);
@@ -64,40 +64,40 @@ void MoveCursor(int pos)
     outb(CRTIN, (uint8_t)((pos >> 8) & 0xFF));
 }
 
-void PutChar(char c)
+void putchar(char c)
 {
     char *vmem;
     switch(c) {
         case '\b':
-            MoveCursor(cursor-1);
-            PutChar(' ');
-            MoveCursor(cursor-1);
+            move_cursor(cursor-1);
+            putchar(' ');
+            move_cursor(cursor-1);
             break;
         case '\t': // I wouldn't call this particularly elegant...
-            PutChar(' ');
-            PutChar(' ');
-            PutChar(' ');
-            PutChar(' ');
+            putchar(' ');
+            putchar(' ');
+            putchar(' ');
+            putchar(' ');
             break;
         case '\n':
-            MoveCursor(cursor - (cursor % COLS) + COLS);
+            move_cursor(cursor - (cursor % COLS) + COLS);
             break;
         default:
             vmem = (char *)VMEM;
             vmem[2*cursor] = c;
             vmem[2*cursor+1] = COLOR;
-            MoveCursor(cursor+1);
+            move_cursor(cursor+1);
     }
 }
 
-void PrintString(char *s)
+void print_string(char *s)
 {
     char c;
     while ((c = *s++) != '\0')
-        PutChar(c);
+        putchar(c);
 }
 
-void VPrintk(char *fmt, va_list ap)
+void vprintk(char *fmt, va_list ap)
 {
     char c = 0, type;
     while ((c = *fmt++) != '\0') {
@@ -106,43 +106,43 @@ operand:
             type = *fmt++;
             switch (type) {
                 case 'u':
-                PrintNumber(va_arg(ap, unsigned int), 10, 0);
+                print_number(va_arg(ap, unsigned int), 10, 0);
                 case 'x':
-                PrintNumber(va_arg(ap, unsigned int), 16, 0);
+                print_number(va_arg(ap, unsigned int), 16, 0);
                 break;
                 case 'd':
-                PrintNumber(va_arg(ap, unsigned int), 10, 1);
+                print_number(va_arg(ap, unsigned int), 10, 1);
                 break;
                 case 'o':
-                PrintNumber(va_arg(ap, unsigned int), 8, 0);
+                print_number(va_arg(ap, unsigned int), 8, 0);
                 case 's':
-                PrintString(va_arg(ap, char *));
+                print_string(va_arg(ap, char *));
                 case '#':
-                PrintString(*fmt == 'x' ? "0x" : "0");
+                print_string(*fmt == 'x' ? "0x" : "0");
                 goto operand;
                 break;
                 default:
                 return; // error
             }
         } else {
-            PutChar(c);
+            putchar(c);
         }
     }
 }
 
-void Printk(char *fmt, ...)
+void printk(char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    VPrintk(fmt, ap);
+    vprintk(fmt, ap);
 }
 
-void ClearScreen()
+void clear_screen()
 {
     int i;
     char *vmem = (char *)VMEM;
     for (i = 0; i < COLS*ROWS; i += 2) {
         vmem[i] = ' ';
     }
-    MoveCursor(0);
+    move_cursor(0);
 }
