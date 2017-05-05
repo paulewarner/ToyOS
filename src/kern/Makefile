@@ -1,4 +1,4 @@
-CFLAGS += -g -fno-stack-protector -static -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer -fno-pic -nostdinc $(INC)
+CFLAGS += -std=gnu11 -g -fno-stack-protector -static -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer -fno-pic -nostdinc $(INC)
 
 DEPDIR = .d
 $(shell mkdir -p $(DEPDIR) >/dev/null)

@@ -5,5 +5,6 @@
         "**/kernel": true
     },
 
-    "python.pythonPath": "/usr/bin/python"
+    "python.pythonPath": "/usr/bin/python",
+    "clang.cflags": ["-I${workspaceRoot}/include"]
 }

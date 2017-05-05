@@ -2,8 +2,10 @@
 .code32
 .text
 .globl start
+.globl kinfo
 start:
     mov $stack_top, %esp
+    movl %ebx, kinfo
     call setup_page_tables
     call enable_paging
     call enable_fpu
@@ -29,7 +31,7 @@ map_p2_table:
     mov $0x200000, %eax             # 2MiB
     mul %ecx                        # start adddress of ecx-th page
     or $0b10000011, %eax            # present + writable + huge
-    mov %eax, p2_table(, %ecx, 8)  # map the entry
+    mov %eax, p2_table(, %ecx, 8)   # map the entry
     inc %ecx                        # increase counter
     cmp $512, %ecx                  # if counter == 512, whole P2 table is mapped
     jne map_p2_table                # else map the next entry
@@ -111,6 +113,8 @@ gdt_seg2:
 gdtdesc:
     .word (gdtdesc - gdt - 1)
     .int gdt
+kinfo:
+    .quad 0
 .section .bss
 .balign 4096
 p4_table: .space 4096
