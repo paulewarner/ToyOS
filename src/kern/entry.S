@@ -2,12 +2,17 @@
 .code32
 .text
 .globl start
-.globl kinfo
+.globl mboot_magic
+.globl mboot_info
+.globl p4_table
+.globl p3_table
+.globl p2_table
 start:
+    movl %eax, mboot_magic
+    movl %ebx, mboot_info
     mov $stack_top, %esp
-    movl %ebx, kinfo
-    call setup_page_tables
-    call enable_paging
+    # call setup_page_tables
+    # call enable_paging
     call enable_fpu
     call enable_sse
     lgdt gdtdesc
@@ -113,8 +118,10 @@ gdt_seg2:
 gdtdesc:
     .word (gdtdesc - gdt - 1)
     .int gdt
-kinfo:
+mboot_info:
     .quad 0
+mboot_magic:
+    .long 0
 .section .bss
 .balign 4096
 p4_table: .space 4096

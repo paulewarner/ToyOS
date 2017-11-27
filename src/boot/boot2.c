@@ -5,6 +5,9 @@
 #include "types.h"
 #include "tty.h"
 
+void TTYInit();
+void Printk(char *fmt, ...);
+
 #define SECTOR_SIZE 512
 
 void LoadKernel(int sector)

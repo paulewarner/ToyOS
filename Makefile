@@ -9,12 +9,6 @@ export
 
 SRCFILES := $(shell find $(1) -type f -name '*.c' -or -name "*.py" -or -name "*.ld" -or -name "*.S" -or -name "*.h")
 
-drive: writedisk.py $(call SRCFILES src/boot) $(call SRCFILES include)
-	$(MAKE) -C src/boot $(INC)
-	# $(MAKE) -C src/kern kernel $(INC)
-	# cd $(BUILD)
-	# $(CURDIR)/writedisk.py $(CURDIR)/bootblock $(SRC)/boot/bootblock.o $(SRC)/boot/boot.elf
-
 os.iso: $(call SRCFILES, src/kern) $(call SRCFILES include)
 	$(MAKE) -C src/kern kernel $(INC)
 	rm -rf isofiles
@@ -23,8 +17,14 @@ os.iso: $(call SRCFILES, src/kern) $(call SRCFILES include)
 	mkdir isofiles/boot/grub
 	cp grub.cfg isofiles/boot/grub
 	cp src/kern/kernel isofiles/boot
-	grub-mkrescue -d deps/i386-pc -o os.iso isofiles
+	grub-mkrescue -d deps/grub/i386-pc -o os.iso isofiles
 	rm -rf isofiles
+
+drive: writedisk.py $(call SRCFILES src/boot) $(call SRCFILES include)
+	# $(MAKE) -C src/boot $(INC)
+	$(MAKE) -C src/kern kernel $(INC)
+	cd $(BUILD)
+	$(CURDIR)/writedisk.py $(CURDIR)/bootblock $(SRC)/boot/bootblock.o $(SRC)/boot/boot.elf
 
 qemu: drive
 	qemu-system-x86_64 -drive file=$(SRC)/boot/bootloader,index=0,media=disk,format=raw,index=0

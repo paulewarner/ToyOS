@@ -7,6 +7,8 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 COMPILE = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
+KERNSRCS_PREBOOT = pre_init.o \
+
 KERNSRCS = main.o \
 		   io.o \
 		   tty.o \
@@ -15,8 +17,14 @@ KERNSRCS = main.o \
 		   vm.o \
 		   util.o \
 
-kernel: $(KERNSRCS) kernel.ld
-	$(LD) -e start -n -T kernel.ld -o kernel $(KERNSRCS)
+kernel: pre_init.o $(KERNSRCS) kernel.ld
+	$(LD) -e start -n -T kernel.ld -o kernel pre_init.o $(KERNSRCS)
+
+preboot.o: $(KERNSRCS_PREBOOT)
+	$(LD) -r -o preboot.o $(KERNSRCS_PREBOOT)
+
+kern.o: $(KERNSRCS)
+	$(LD) -r -o kern.o $(KERNSRCS)
 
 %.o : %.S
 %.o : %.S $(DEPDIR)/%.d

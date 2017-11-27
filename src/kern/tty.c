@@ -23,26 +23,19 @@ int cursor = 0;
 
 void print_number(unsigned int n, int radix, int issigned)
 {
-
     char buf[BUFSIZE];
     int i = 0, sign = 0, mod;
     if (issigned && (sign = n) < 0) {
         n = -n;
     }
     do {
-        mod = (issigned ? -n : n) % radix;
+        mod = issigned ? n % radix : -(n % radix);
         buf[i++] = mod < 10 ? mod + '0' : mod - 10 + 'a';
     } while (n /= radix);
     if (sign < 0)
         buf[i++] = '-';
-    if (issigned) {
-        int x = 0;
-        while (x < i)
-            putchar(buf[x++]);
-    } else {
-        while (i) {
-            putchar(buf[--i]);
-        }
+    while (i) {
+        putchar(buf[--i]);
     }
     return;
 }
