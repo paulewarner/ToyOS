@@ -2,7 +2,9 @@
 {
     "files.exclude": {
         "**/bootblock": true,
-        "**/kernel": true
+        "**/kernel": true,
+        "**/*.o": true,
+        "**/.d": true
     },
 
     "python.pythonPath": "/usr/bin/python",

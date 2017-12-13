@@ -21,7 +21,7 @@ void print_string(char *s);
 
 int cursor = 0;
 
-void print_number(unsigned int n, int radix, int issigned)
+void print_number(uint64_t n, int radix, int issigned)
 {
     char buf[BUFSIZE];
     int i = 0, sign = 0, mod;
@@ -29,7 +29,7 @@ void print_number(unsigned int n, int radix, int issigned)
         n = -n;
     }
     do {
-        mod = issigned ? n % radix : -(n % radix);
+        mod = n % radix;
         buf[i++] = mod < 10 ? mod + '0' : mod - 10 + 'a';
     } while (n /= radix);
     if (sign < 0)
@@ -100,6 +100,7 @@ operand:
             switch (type) {
                 case 'u':
                 print_number(va_arg(ap, unsigned int), 10, 0);
+                break;
                 case 'x':
                 print_number(va_arg(ap, unsigned int), 16, 0);
                 break;

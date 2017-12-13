@@ -17,11 +17,12 @@ KERNSRCS = main.o \
 		   vm.o \
 		   util.o \
 
-kernel: pre_init.o $(KERNSRCS) kernel.ld
-	$(LD) -e start -n -T kernel.ld -o kernel pre_init.o $(KERNSRCS)
+kernel: preboot.o $(KERNSRCS) kernel.ld
+	$(LD) -e start -n -T kernel.ld -o kernel preboot.o $(KERNSRCS)
 
 preboot.o: $(KERNSRCS_PREBOOT)
 	$(LD) -r -o preboot.o $(KERNSRCS_PREBOOT)
+	objcopy -O elf64-x86-64 preboot.o
 
 kern.o: $(KERNSRCS)
 	$(LD) -r -o kern.o $(KERNSRCS)

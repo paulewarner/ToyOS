@@ -25,20 +25,20 @@ SECTIONS {
     }
 
     . += OFFSET;
+    PROVIDE(unpaged_end = .);
 
 	.unpaged_text :
     {
-        pre_init.o(.text)
+        preboot.o(.text)
     }
 	.unpaged_data ALIGN(4096) :
     {
-        pre_init.o(.data .rodata*)
+        preboot.o(.data .rodata*)
     }
 	.unpaged_bss  ALIGN(4096) :
     { 
-        pre_init.o(.bss COMMON)
+        preboot.o(.bss COMMON)
     }
-    PROVIDE(unpaged_end = .);
 
     PROVIDE(end = .);
 }

@@ -11,8 +11,8 @@ start:
     movl %eax, mboot_magic
     movl %ebx, mboot_info
     mov $stack_top, %esp
-    # call setup_page_tables
-    # call enable_paging
+    call setup_page_tables
+    call enable_paging
     call enable_fpu
     call enable_sse
     lgdt gdtdesc
